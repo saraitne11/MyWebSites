@@ -48,7 +48,7 @@
       function fetchPage(name){
         fetch(name).then(function(response){
           if(response.status == '404'){
-            document.querySelector('article').innerHTML = 'There Is No Contents for '+name;
+            document.querySelector('article').innerHTML = '<h2>There Is No Contents for ' + name + '</h2>';
           } else {
             response.text().then(function(text){
               document.querySelector('article').innerHTML = text;
