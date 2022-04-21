@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+  <head>
+    <title>WEB1 - Welcome</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="../style.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="../colors.js"></script>
+  </head>
+
+  <body>
+    <h1><a href="#!web" onclick="fetchPage('articles/web')">WEB</a></h1>
+
+    <div id="grid">
+      <div id="contents">
+        <div style="margin-left: 15px;">
+          <input id="night_day" type="button" value="night" onclick="nightDayHandler(this);">
+        </div>
+
+        <ol id="nav">
+
+        </ol>
+      </div>
+      <article style="padding-left: 25px">
+
+      </article>
+    </div>
+
+    <script>
+      fetch('list').then(function(response){
+        response.text().then(function(text){
+          // <li><a href="#!html" onclick="fetchPage('articles/html')">HTML</a></li>
+          var items = text.split('\n');
+          // console.log(items);
+          var i = 0;
+          var tags = '';
+          while(i<items.length){
+            var item = items[i];
+            item = item.trim();
+            var tag = '<li><a href="#!'+item+'" onclick="fetchPage(\'articles/'+item.toLowerCase()+'\')">'+item+'</a></li>\n';
+            tags = tags + tag;
+            i = i + 1;
+          }
+          document.querySelector('#nav').innerHTML = tags;
+        })
+      });
+
+      function fetchPage(name){
+        fetch(name).then(function(response){
+          if(response.status == '404'){
+            document.querySelector('article').innerHTML = 'There Is No Contents for '+name;
+          } else {
+            response.text().then(function(text){
+              document.querySelector('article').innerHTML = text;
+            })
+          }
+        });
+      }
+
+      if(location.hash){
+        fetchPage('articles/' + location.hash.substring(2))
+      } else {
+        fetchPage('articles/web')
+      }
+
+    </script>
+  </body>
+</html>

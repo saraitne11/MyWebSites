@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+    <body>
+      <article>
+
+      </article>
+      <input type="button" value="fetch" onclick="
+        /*
+        fetch('css').then(function(response){
+          response.text().then(function(text){
+            document.querySelector('article').innerHTML = text;
+            //alert(text);
+          })
+        })
+        */
+       
+      // function callbackme(){
+      //   console.log('response end');
+      // }
+      
+      // callbackme = function(){
+      //   console.log('response end')
+      // }
+
+      // Asynchronous
+      fetch('html').then(function(response){
+        if(response.status == '404'){
+          alert('Not Found')
+        }
+        else{
+          console.log(response.text())
+        }
+      });
+      console.log(1);
+      console.log(2);
+      ">
+    </body>
+</html>
