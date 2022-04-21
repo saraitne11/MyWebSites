@@ -1,2 +1,2 @@
 # LeeJangWon Web Study
- 생활코딩 Web Class
+    1. 생활코딩 Web Class
