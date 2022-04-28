@@ -37,7 +37,7 @@
           while(i<items.length){
             var item = items[i];
             item = item.trim();
-            var tag = '<li><a href="#!'+item+'" onclick="fetchPage(\'articles/'+item.toLowerCase()+'\')">'+item+'</a></li>\n';
+            var tag = `<li><a href="#!${item}" onclick="fetchPage(articles/${item.toLowerCase()})">${item}</a></li>\n`;
             tags = tags + tag;
             i = i + 1;
           }
