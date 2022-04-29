@@ -36,9 +36,7 @@ var app = http.createServer(function(request,response){
     var pathName = url.parse(_url, true).pathname;
     var articleDir = './articles/'
 
-
     if(pathName === '/'){
-      
       if(queryData.id === undefined){
         fs.readdir(articleDir, function(err, fileList){
           var title = 'Welcome';
@@ -61,7 +59,6 @@ var app = http.createServer(function(request,response){
           })
         })
       }
-      
     } else {
       response.writeHead(404);
       response.end(`${pathName} is Not Found`);
