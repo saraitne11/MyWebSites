@@ -10,14 +10,15 @@ var app = http.createServer(function(request,response){
 
 
     if(pathName === '/'){
-
-      fileList = fs.readdirSync(articlesDir);
+      var fileList = fs.readdirSync(articlesDir);
       var contentsList = '<ul>';
-      for (var i in fileList){
+      var i = 0
+      while(i < fileList.length){
         contentsList = contentsList + `<li><a href="/?id=${fileList[i]}">${fileList[i]}</a></li>`;
+        i = i + 1;
       }
       contentsList = contentsList + '</ul>';
-
+      
       if(queryData.id === undefined){
         var title = 'Welcome';
         var article = 'Hello, Node.JS!';
