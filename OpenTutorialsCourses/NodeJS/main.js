@@ -77,6 +77,14 @@ var app = http.createServer(function(request, response){
             var control = `
             <a href="/create_form">Create</a> 
             <a href="/update_form?id=${title}">Update<\a>
+            <form 
+              action="/delete" 
+              method="post" 
+              onsubmit="return confirm('Do you want to delete ${title}?');" 
+              style="display: inline">
+                <input type="hidden" name=id value="${title}">
+                <input type="submit" value="delete">
+            </form>
             `;
             var template = getTemplateHTML(title, list, body, control);
             response.writeHead(200);
@@ -126,6 +134,49 @@ var app = http.createServer(function(request, response){
         })
       })
     } else if(pathName === '/update') {
+
+      var body = '';
+      request.on('data', function(data){
+        body = body + data;
+      });
+
+      request.on('end', function(){
+        var post = new URLSearchParams(body);
+        var id = post.get('id');
+        var title = post.get('title');
+        var content = post.get('content');
+
+        if (id !== title) {
+          fs.rename(articleDir + id, articleDir + title, function(err){
+            fs.writeFile(articleDir + title, content, 'utf-8', function(err){
+              response.writeHead(302, {Location: `/?id=${title}`});   // redirect to updated page
+              response.end();
+            });
+          });
+        } else {
+          fs.writeFile(articleDir + title, content, 'utf-8', function(err){
+            response.writeHead(302, {Location: `/?id=${title}`});   // redirect to updated page
+            response.end();
+          });
+        }
+      });
+
+    } else if(pathName === '/delete') {
+
+      var body = '';
+      request.on('data', function(data){
+        body = body + data;
+      });
+
+      request.on('end', function(){
+        var post = new URLSearchParams(body);
+        var id = post.get('id');
+
+        fs.unlink(articleDir + id, function(err){
+          response.writeHead(302, {Location: '/'});   // redirect to Home
+          response.end();
+        });
+      });
 
     }
     else {
