@@ -1,49 +1,9 @@
 var http = require('http');
 var fs = require('fs');
 var url = require('url');
+var path = require('path');
 
-
-function getTemplateForm(action, title='', content=''){
-  return `
-  <form action="${action}" method="post">
-    <p><input type="hidden" name="id" value="${title}"></p>
-    <p><input type="text" name="title" placeholder="Title" value="${title}"></p>
-    <p><textarea name="content" placeholder="Article Content">${content}</textarea></p>
-    <p><input type="submit"></p>
-  </form>
-  `;
-}
-
-
-function getTemplateHTML(title, list, body, control){
-  return `
-  <!doctype html>
-  <html>
-  <head>
-    <title>WEB1 - ${title}</title>
-    <meta charset="utf-8">
-  </head>
-  <body>
-    <h1><a href="/">WEB</a></h1>
-    ${list}
-    ${control}
-    ${body}
-  </body>
-  </html>
-  `;
-}
-
-
-function getTemplateList(fileList){
-  var listStr = '<ul>';
-  var i = 0
-  while(i < fileList.length){
-    listStr = listStr + `<li><a href="/?id=${fileList[i]}">${fileList[i]}</a></li>`;
-    i = i + 1;
-  }
-  listStr = listStr + '</ul>';
-  return listStr;
-}
+var Template = require('./template.js');
 
 
 var app = http.createServer(function(request, response){
@@ -57,21 +17,21 @@ var app = http.createServer(function(request, response){
         fs.readdir(articleDir, function(err, fileList){
           var title = 'Welcome';
           var content = 'Hello, Node.JS!';
-          var list = getTemplateList(fileList);
+          var list = Template.getList(fileList);
           var body = `<h2>${title}</h2><p>${content}</p>`;
           var control = `<a href="/create_form">Create</a>`;
-          var template = getTemplateHTML(title, list, body, control);
+          var template = Template.getHTML(title, list, body, control);
           response.writeHead(200);
           response.end(template);
         })
       } else {
         fs.readdir(articleDir, function(readDirErr, fileList){
-          var title = queryData.id;
-          fs.readFile(articleDir + queryData.id, 'utf-8', function(readFileErr, content){
+          var title = path.parse(queryData.id).base;
+          fs.readFile(articleDir + title, 'utf-8', function(readFileErr, content){
             if (readFileErr){
               var content = `${title} is not Exist`
             }
-            var list = getTemplateList(fileList);
+            var list = Template.getList(fileList);
             // content의 줄바꿈 문자(\n)를 <br>로 치환
             var body = `<h2>${title}</h2><p>${content.replace(/\n/g, '<br>')}</p>`;
             var control = `
@@ -86,7 +46,7 @@ var app = http.createServer(function(request, response){
                 <input type="submit" value="delete">
             </form>
             `;
-            var template = getTemplateHTML(title, list, body, control);
+            var template = Template.getHTML(title, list, body, control);
             response.writeHead(200);
             response.end(template);
           })
@@ -95,10 +55,10 @@ var app = http.createServer(function(request, response){
     } else if(pathName === '/create_form') {
       fs.readdir(articleDir, function(err, fileList){
         var title = 'Create Article';
-        var list = getTemplateList(fileList);
-        var body = getTemplateForm('\create');
+        var list = Template.getList(fileList);
+        var body = Template.getForm('\create');
         var control = '';
-        var template = getTemplateHTML(title, list, body, control);
+        var template = Template.getHTML(title, list, body, control);
         response.writeHead(200);
         response.end(template);
       })
@@ -111,7 +71,7 @@ var app = http.createServer(function(request, response){
 
       request.on('end', function(){
         var post = new URLSearchParams(body);
-        var title = post.get('title');
+        var title = path.parse(post.get('title')).base;
         var content = post.get('content');
 
         fs.writeFile(articleDir + title, content, 'utf-8', function(err){
@@ -123,12 +83,12 @@ var app = http.createServer(function(request, response){
       
     } else if(pathName === '/update_form') {
       fs.readdir(articleDir, function(err1, fileList){
-        var title = queryData.id;
-        fs.readFile(articleDir + queryData.id, 'utf-8', function(err2, content){
-          var list = getTemplateList(fileList);
-          var body = getTemplateForm('/update', title, content)
+        var title = path.parse(queryData.id).base;
+        fs.readFile(articleDir + title, 'utf-8', function(err2, content){
+          var list = Template.getList(fileList);
+          var body = Template.getForm('/update', title, content)
           var control = '';
-          var template = getTemplateHTML(title, list, body, control);
+          var template = Template.getHTML(title, list, body, control);
           response.writeHead(200);
           response.end(template);
         })
@@ -142,8 +102,8 @@ var app = http.createServer(function(request, response){
 
       request.on('end', function(){
         var post = new URLSearchParams(body);
-        var id = post.get('id');
-        var title = post.get('title');
+        var id = path.parse(post.get('title')).base;
+        var title = path.parse(post.get('title')).base;
         var content = post.get('content');
 
         if (id !== title) {
@@ -170,7 +130,7 @@ var app = http.createServer(function(request, response){
 
       request.on('end', function(){
         var post = new URLSearchParams(body);
-        var id = post.get('id');
+        var id = path.parse(post.get('id')).base;
 
         fs.unlink(articleDir + id, function(err){
           response.writeHead(302, {Location: '/'});   // redirect to Home
