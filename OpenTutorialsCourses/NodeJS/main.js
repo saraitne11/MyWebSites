@@ -2,8 +2,9 @@ var http = require('http');
 var fs = require('fs');
 var url = require('url');
 var path = require('path');
+var sanitizeHtml = require('sanitize-html');
 
-var Template = require('./template.js');
+var template = require('./template.js');
 
 
 var app = http.createServer(function(request, response){
@@ -17,23 +18,26 @@ var app = http.createServer(function(request, response){
         fs.readdir(articleDir, function(err, fileList){
           var title = 'Welcome';
           var content = 'Hello, Node.JS!';
-          var list = Template.getList(fileList);
+          var list = template.getList(fileList);
           var body = `<h2>${title}</h2><p>${content}</p>`;
           var control = `<a href="/create_form">Create</a>`;
-          var template = Template.getHTML(title, list, body, control);
+          var html = template.getHTML(title, list, body, control);
           response.writeHead(200);
-          response.end(template);
+          response.end(html);
         })
       } else {
         fs.readdir(articleDir, function(readDirErr, fileList){
           var title = path.parse(queryData.id).base;
+          title = sanitizeHtml(title);
           fs.readFile(articleDir + title, 'utf-8', function(readFileErr, content){
             if (readFileErr){
               var content = `${title} is not Exist`
             }
-            var list = Template.getList(fileList);
+            content = sanitizeHtml(content)
+            content = content.replace(/\n/g, '<br>')
+            var list = template.getList(fileList);
             // content의 줄바꿈 문자(\n)를 <br>로 치환
-            var body = `<h2>${title}</h2><p>${content.replace(/\n/g, '<br>')}</p>`;
+            var body = `<h2>${title}</h2><p>${content}</p>`;
             var control = `
             <a href="/create_form">Create</a> 
             <a href="/update_form?id=${title}">Update<\a>
@@ -46,21 +50,21 @@ var app = http.createServer(function(request, response){
                 <input type="submit" value="delete">
             </form>
             `;
-            var template = Template.getHTML(title, list, body, control);
+            var html = template.getHTML(title, list, body, control);
             response.writeHead(200);
-            response.end(template);
+            response.end(html);
           })
         })
       }
     } else if(pathName === '/create_form') {
       fs.readdir(articleDir, function(err, fileList){
         var title = 'Create Article';
-        var list = Template.getList(fileList);
-        var body = Template.getForm('\create');
+        var list = template.getList(fileList);
+        var body = template.getForm('\create');
         var control = '';
-        var template = Template.getHTML(title, list, body, control);
+        var html = template.getHTML(title, list, body, control);
         response.writeHead(200);
-        response.end(template);
+        response.end(html);
       })
     } else if(pathName === '/create') {
 
@@ -85,12 +89,12 @@ var app = http.createServer(function(request, response){
       fs.readdir(articleDir, function(err1, fileList){
         var title = path.parse(queryData.id).base;
         fs.readFile(articleDir + title, 'utf-8', function(err2, content){
-          var list = Template.getList(fileList);
-          var body = Template.getForm('/update', title, content)
+          var list = template.getList(fileList);
+          var body = template.getForm('/update', title, content)
           var control = '';
-          var template = Template.getHTML(title, list, body, control);
+          var html = template.getHTML(title, list, body, control);
           response.writeHead(200);
-          response.end(template);
+          response.end(html);
         })
       })
     } else if(pathName === '/update') {
