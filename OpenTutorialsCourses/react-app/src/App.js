@@ -92,16 +92,13 @@ function UpdateLink(props){
 
 
 function UpdateForm(props){
-  const [title, setTitle] = useState(props.topic.title);
-  const [body, setBody] = useState(props.topic.body);
+  const [title, setTitle] = useState(props.title);
+  const [body, setBody] = useState(props.body);
   return (
     <article>
       <h2>Update</h2>
       <form onSubmit={event=>{
         event.preventDefault();
-        const title = event.target.title.value;
-        const body = event.target.body.value;
-        // event.target - 이벤트가 발생한 태그
         props.onUpdate(title, body);
       }}>
         <p><input type="text" name="title" placeholder="title" value={title} 
@@ -112,6 +109,29 @@ function UpdateForm(props){
       </form>
     </article>
   );
+}
+
+
+function DeleteButton(props){
+  return (
+    <input type="button" value="Delete" onClick={(event)=>{
+      event.preventDefault();
+      // console.log(props);
+      props.onDelete(props.topicList, props.id);
+    }}/>
+  )
+}
+
+
+function DeleteTopic(topicList, id){
+  let newTopicList = [];
+  for(let i=0; i<topicList.length; i++){
+    if(topicList[i].id !== id){
+      newTopicList.push(topicList[i]);
+    }
+  }
+  // console.log(newTopicList);
+  return newTopicList;
 }
 
 
@@ -138,14 +158,19 @@ function App(){
   ]);
   let content = null;
   let updateLink = null;
+  let deleteButton = null;
 
   if(mode === modeList.welcome){
-    content = <Article title="Welcome" body="Hello, Web"></Article>;
+    content = <Article title="Welcome" body="Hello, React Web"></Article>;
 
   } else if(mode === modeList.read){
     let topic = topicList.find((t)=>t.id===id);
     content = <Article title={topic.title} body={topic.body}></Article>;
     updateLink = <li><UpdateLink topic={topic} onChangeMode={()=>{setMode(modeList.update)}}></UpdateLink></li>;
+    deleteButton = <li><DeleteButton 
+                        topicList={topicList} id={id} 
+                        onDelete={(topicList, id)=>{setTopicList(DeleteTopic(topicList, id)); setMode(modeList.welcome)}}>
+                    </DeleteButton></li>;
 
   } else if(mode === modeList.create){
     content = <CreateForm onCreate={(_title, _body)=>{
@@ -161,14 +186,16 @@ function App(){
 
   } else if(mode === modeList.update){
     let topic = topicList.find((t)=>t.id===id);
-    content = <UpdateForm topic={topic} onUpdate={(_title, _body)=>{
-      const updatedTopic = {id: id, title: _title, body: _body};
-      const newTopicList = [...topicList];  // Array Copy
-      const idx = newTopicList.map((topic)=>(topic.id)).indexOf(id);
-      newTopicList[idx] = updatedTopic;
-      setTopicList(newTopicList);
-      setMode(modeList.read);
-    }}></UpdateForm>;
+    content = <UpdateForm title={topic.title} body={topic.body} 
+      onUpdate={(_title, _body)=>{
+        const updatedTopic = {id: id, title: _title, body: _body};
+        const newTopicList = [...topicList];  // Array Copy
+        const idx = newTopicList.map((topic)=>(topic.id)).indexOf(id);
+        newTopicList[idx] = updatedTopic;
+        setTopicList(newTopicList);
+        setMode(modeList.read);
+      }}>  
+    </UpdateForm>;
   }
 
   // console.log(topicList);
@@ -180,6 +207,7 @@ function App(){
       <ul>
         <li><CreateLink onChangeMode={()=>{setMode(modeList.create)}}></CreateLink></li>
         {updateLink}
+        {deleteButton}
       </ul>
     </div>
   );
